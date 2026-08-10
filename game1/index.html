@@ -74,10 +74,10 @@
     ctx.fillText('Please press "R" or reload to try again', frame.x + frame.width / 2, frame.y + frame.height / 2 + 50);
     return; // ループを止める
    }
-   if(key.ArrowRight && player.x + player.radius < frame.x + frame.width){ player.x += player.speed; };
-   if(key.ArrowLeft && player.x - player.radius > frame.x){ player.x -= player.speed; };
-   if(key.ArrowUp && player.y - player.radius > frame.y){ player.y -= player.speed; };
-   if(key.ArrowDown && player.y + player.radius < frame.y + frame.height){ player.y += player.speed; };
+   if((key.ArrowRight || key.d) && player.x + player.radius < frame.x + frame.width){ player.x += player.speed; };
+   if((key.ArrowLeft || key.a) && player.x - player.radius > frame.x){ player.x -= player.speed; };
+   if((key.ArrowUp || key.w) && player.y - player.radius > frame.y){ player.y -= player.speed; };
+   if((key.ArrowDown || key.s) && player.y + player.radius < frame.y + frame.height){ player.y += player.speed; };
    ctx.beginPath() // 線つながり防止(ペンを上げる→ペンを下ろす)これがないと線でつながる
    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2); // 円は中心が起点 Math.PI * 2は1周という意味 *2がないと半円
    ctx.fillStyle = '#8888ff';
