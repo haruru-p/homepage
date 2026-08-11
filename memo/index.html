@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+ <meta charset="UTF-8">
+ <title>自作メモ帳</title>
+ <link rel='icon' href='icon.png'>
+ <style>
+  body { font-family: sans-serif; padding: 0px; color: white; background-color: black; border-color: white; user-select: none; position: relative; }
+  #title { width: 100%; height: 20px; margin-bottom: 0px; color: white; background-color: black; border-color: white; user-select: auto; font-size: 18px; }
+  #memo { width: 100%; height: 670px; margin-bottom: 0px; color: white; background-color: black; border-color: white; user-select: auto; }
+  #custom { width: 100px; height: 35px; font-size: 15px; color: white; background-color: black; border-color: white; }
+  button { padding: 10px 20px; cursor: pointer; color: white; background-color: black; border-color: white; transition: 0.3s; }
+  button:hover { color: black; background-color: white; }
+  #upload { display: none; }
+  #h2count { display: flex; gap: 50px; }
+  #headbutton { display:flex; position: absolute; top: 0; right: 0; height: 70px; }
+ </style>
+</head>
+<body>
+ <div id="h2count">
+  <h2>自作メモ帳</h2>
+  <h2 id="h2tag">文字数: 0</h2>
+  <h2 id="h2tag2">サイズ: 0.00KB</h2>
+  <h2 id="h2tag3">ストレージ: 1</h2>
+ </div>
+ <div id="headbutton">
+  <button id="Bstorage" title="ストレージを変更(alt+b)">前のストレージへ</button>
+  <button id="storage" title="ストレージを変更(alt+n)">次のストレージへ</button>
+ </div>
+ <input id="title" placeholder="タイトルを入力..." type="text">
+ <textarea id="memo" placeholder="メモを入力..."></textarea>
+
+ <br>
+
+ <button id="txt_download" title="Memo.txtとして保存します(alt+t)">.txtとして保存</button>
+ <button id="html_download" title="index.htmlとして保存します(alt+h, ctrl+s)">.htmlとして保存</button>
+ <button id="js_download" title="script.jsとして保存します(alt+j)">.jsとして保存</button>
+ <button id="css_download" title="style.cssとして保存します(alt+c)">.cssとして保存</button>
+ <input type="text" id="custom" placeholder="拡張子" title="希望する拡張子をここに入力して右の保存ボタンを押してください">
+ <button id="custom_download" title="カスタム拡張子として保存します">カスタム拡張子で保存</button>
+ <button id="Program1" title="基本プログラムを貼り付け(alt+k)">基本プログラム</button>
+ <input type="file" id="upload" accept=".txt,.html,.js,.css,.svg,.json">
+ <button id="upload2" title="アップロード(alt+f)">アップロード</button>
+
+
+ <script>// 初期設定
+  const title = document.getElementById('title');
+  const memoArea = document.getElementById('memo');
+  const h2tag = document.getElementById('h2tag')
+  const h2tag2 = document.getElementById('h2tag2')
+
+  // localStorage
+  const storageKey = 'memoArea';
+  const savedData = localStorage.getItem(`${storageKey}1`);
+  let storagemode = 1;
+  const ctrlShort = {
+   s: 'html_download'
+  };
+  const altShort = {
+   t: 'txt_download',
+   h: 'html_download',
+   j: 'js_download',
+   c: 'css_download',
+   k: 'Program1',
+   u: 'upload',
+   b: 'Bstorage',
+   n: 'storage'
+  };
+
+
+  memoArea.focus()
+
+  if (savedData) {
+   title.value = localStorage.getItem(`${storageKey}title1`);
+   memoArea.value = savedData;
+   h2tag.textContent = `文字数: ${memoArea.value.length}`
+   const bytes = new TextEncoder().encode(memoArea.value).length
+   const byte = (bytes / 1000).toFixed(2);
+   h2tag2.textContent = `サイズ: ${byte}KB`;
+  }
+
+  // localStorageの保存
+  title.addEventListener('input', ()=>{
+   localStorage.setItem(`${storageKey}title${storagemode}`, title.value);
+  });    
+  memoArea.addEventListener('input', () => {
+   localStorage.setItem(`${storageKey}${storagemode}`, memoArea.value);
+   h2tag.textContent = `文字数: ${memoArea.value.length}`
+   const bytes = new TextEncoder().encode(memoArea.value).length
+   const byte = (bytes / 1000).toFixed(2);
+   h2tag2.textContent = `サイズ: ${byte}KB`;
+  });
+
+
+  document.getElementById('txt_download').addEventListener('click', ()=>{
+   if (confirm(".txtとして保存してよろしいですか?")){
+    const text = memoArea.value;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'Memo.txt';
+    link.click();
+    URL.revokeObjectURL(link.href);
+   }else{
+    window.alert ("キャンセルされました");
+   }
+   memo.focus()
+  });
+  document.getElementById('html_download').addEventListener('click', ()=>{
+   if (confirm(".htmlとして保存してよろしいですか?")){
+    const text = memoArea.value;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'index.html';
+    link.click();
+    URL.revokeObjectURL(link.href);
+   }else{
+    window.alert ("キャンセルされました");
+   }
+   memo.focus()
+  });
+  document.getElementById('js_download').addEventListener('click', ()=>{
+   if (confirm (".jsとして保存してよろしいですか?")){
+    const text = memoArea.value;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'script.js';
+    link.click();
+    URL.revokeObjectURL(link.href);
+   }else{
+    window.alert ("キャンセルされました");
+   }
+   memo.focus()
+  });
+  document.getElementById('css_download').addEventListener('click', ()=>{
+   if (confirm(".cssとして保存してよろしいですか?")){
+    const text = memoArea.value;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'style.css';
+    link.click(); URL.revokeObjectURL(link.href);
+   }else{
+    window.alert ("キャンセルされました");
+   }
+   memo.focus()
+  });
+  let custom = document.getElementById("custom")
+  document.getElementById('custom_download').addEventListener('click', ()=>{
+   if (confirm(custom.value + "として保存してよろしいですか?")){
+    const text = memoArea.value;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    if (custom.value.includes('.')){
+     link.download = 'custom' + custom.value;
+    }else{
+     link.download = 'custom.' + custom.value;
+    }
+    link.click();
+    URL.revokeObjectURL(link.href);
+   }else{
+    window.alert ("キャンセルされました");
+   }
+   memo.focus()
+  });
+
+  document.getElementById('Program1').addEventListener('click', ()=>{
+   if (confirm('基本プログラムを上書きしてよろしいですか?')) {
+    memoArea.value = `<!DOCTYPE html>\n<html lang="ja">\n<head>\n <meta charset = "UTF-8">\n <title></title>\n <style>\n </style>\n</head>\n<body>\n <script>\n <\/script>\n</body>\n</html>`;
+    h2tag.textContent = `文字数: ${memoArea.value.length}`
+    const bytes = new TextEncoder().encode(memoArea.value).length
+    const byte = (bytes / 1000).toFixed(2);
+    h2tag2.textContent = `サイズ: ${byte}KB`;
+    window.alert ("上書きされました");
+   }else{
+    window.alert ("キャンセルされました");
+   }
+   memo.focus()
+  });
+  document.getElementById('upload2').addEventListener('click', ()=>{
+   document.getElementById('upload').click()
+  });
+
+  document.getElementById('upload').addEventListener('click', (e)=>{
+   e.target.value = ''
+   memo.focus()
+  });
+
+  document.getElementById('upload').addEventListener('change', (e)=>{
+   const file = e.target.files[0];
+   if (!file) return;
+   if (confirm(file.name + 'のファイルを上書きしてよろしいですか?')) {
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+     const content = e.target.result;
+     memoArea.value = content;
+     h2tag.textContent = `文字数: ${memoArea.value.length}`
+     const bytes = new TextEncoder().encode(memoArea.value).length
+     const byte = (bytes / 1000).toFixed(2);
+     h2tag2.textContent = `サイズ: ${byte}KB`;
+    };
+    reader.readAsText(file);
+    window.alert ("上書きされました");
+   }else{
+    window.alert ("キャンセルされました");
+   }
+  });
+
+  document.getElementById('Bstorage').addEventListener('click', ()=>{
+   if(storagemode === 1){
+    storagemode = 9;
+   }else{
+    storagemode--;
+   }
+   title.value = localStorage.getItem(`${storageKey}title${storagemode}`);
+   memoArea.value = localStorage.getItem(`${storageKey}${storagemode}`)
+   document.getElementById('h2tag3').textContent = `ストレージ: ${storagemode}`
+   h2tag.textContent = `文字数: ${memoArea.value.length}`
+   const bytes = new TextEncoder().encode(memoArea.value).length
+   const byte = (bytes / 1000).toFixed(2);
+   h2tag2.textContent = `サイズ: ${byte}KB`;
+  });
+
+  document.getElementById('storage').addEventListener('click', ()=>{
+   if (storagemode === 9){
+    storagemode = 1;
+   }else{
+    storagemode++;
+   }
+   title.value = localStorage.getItem(`${storageKey}title${storagemode}`);
+   memoArea.value = localStorage.getItem(`${storageKey}${storagemode}`)
+   document.getElementById('h2tag3').textContent = `ストレージ: ${storagemode}`
+   h2tag.textContent = `文字数: ${memoArea.value.length}`
+   const bytes = new TextEncoder().encode(memoArea.value).length
+   const byte = (bytes / 1000).toFixed(2);
+   h2tag2.textContent = `サイズ: ${byte}KB`;
+  });
+
+  document.addEventListener('keydown', (e)=>{
+   if (e.ctrlKey && ctrlShort[e.key]){
+    e.preventDefault();
+    document.getElementById(ctrlShort[e.key]).click();
+   }
+   if (e.altKey && altShort[e.key]){
+    e.preventDefault();
+    document.getElementById(altShort[e.key]).click();
+   }
+
+   if (e.altKey && e.key === 'f'){
+    e.preventDefault()
+    if (document.fullscreenElement){
+     document.exitFullscreen()
+    }else{
+     document.documentElement.requestFullscreen()
+    }
+   }
+  });
+  memoArea.addEventListener('keydown', (e)=>{
+   if (e.key === 'Tab'){
+    e.preventDefault()
+    const start = memoArea.selectionStart;
+    const end = memoArea.selectionEnd;
+    memoArea.value = memoArea.value.substring(0, start) + '  ' + memoArea.value.substring(end);
+    memo.selectionStart = memo.selectionEnd = start + 2;
+   }
+  });
+ </script>
+</body>
+</html>
