@@ -3,7 +3,7 @@
 <head>
  <meta charset="UTF-8">
  <title>自作メモ帳</title>
- <link rel='icon' href='img/icon.png'>
+ <link rel='icon' href='icon.png'>
  <style>
   body { font-family: sans-serif; padding: 0px; color: white; background-color: black; border-color: white; user-select: none; position: relative; }
   #title { width: 100%; height: 20px; margin-bottom: 0px; color: white; background-color: black; border-color: white; user-select: auto; font-size: 18px; }
@@ -14,9 +14,11 @@
   #upload { display: none; }
   #h2count { display: flex; gap: 50px; }
   #headbutton { display:flex; position: absolute; top: 0; right: 0; height: 70px; }
+  #dragdrop { display: none; margin: 0; position: fixed; width: 100vw; height: 100vh; z-index: 9999; pointer-events: none; cursor: copy; align-items: center; justify-content: center; background-color: rgba(0, 0, 0, 0.8); color: white; }
  </style>
 </head>
 <body>
+<div id="dragdrop">ここにドロップしてペースト</div>
  <div id="h2count">
   <h2>自作メモ帳</h2>
   <h2 id="h2tag">文字数: 0</h2>
@@ -32,12 +34,12 @@
 
  <br>
 
- <button id="txt_download" title="Memo.txtとして保存します(alt+t)">.txtとして保存</button>
- <button id="html_download" title="index.htmlとして保存します(alt+h, ctrl+s)">.htmlとして保存</button>
- <button id="js_download" title="script.jsとして保存します(alt+j)">.jsとして保存</button>
- <button id="css_download" title="style.cssとして保存します(alt+c)">.cssとして保存</button>
+ <button class="download" id="txt_download" title="Memo.txtとして保存します(alt+t)">.txtとして保存</button>
+ <button class="download" id="html_download" title="index.htmlとして保存します(alt+h, ctrl+s)">.htmlとして保存</button>
+ <button class="download" id="js_download" title="script.jsとして保存します(alt+j)">.jsとして保存</button>
+ <button class="download" id="css_download" title="style.cssとして保存します(alt+c)">.cssとして保存</button>
  <input type="text" id="custom" placeholder="拡張子" title="希望する拡張子をここに入力して右の保存ボタンを押してください">
- <button id="custom_download" title="カスタム拡張子として保存します">カスタム拡張子で保存</button>
+ <button class="download2" id="custom_download" title="カスタム拡張子として保存します">カスタム拡張子で保存</button>
  <button id="Program1" title="基本プログラムを貼り付け(alt+k)">基本プログラム</button>
  <input type="file" id="upload" accept=".txt,.html,.js,.css,.svg,.json">
  <button id="upload2" title="アップロード(alt+f)">アップロード</button>
@@ -46,8 +48,8 @@
  <script>// 初期設定
   const title = document.getElementById('title');
   const memoArea = document.getElementById('memo');
-  const h2tag = document.getElementById('h2tag')
-  const h2tag2 = document.getElementById('h2tag2')
+  const h2tag = document.getElementById('h2tag');
+  const h2tag2 = document.getElementById('h2tag2');
 
   // localStorage
   const storageKey = 'memoArea';
@@ -91,70 +93,38 @@
    h2tag2.textContent = `サイズ: ${byte}KB`;
   });
 
+  const dlList = {
+   txt_download: 'Memo.txt',
+   html_download: 'index.html',
+   js_download: 'script.js',
+   css_download: 'style.css'
+  }
+  const dl = document.querySelectorAll('.download')
 
-  document.getElementById('txt_download').addEventListener('click', ()=>{
-   if (confirm(".txtとして保存してよろしいですか?")){
-    const text = memoArea.value;
-    const blob = new Blob([text], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'Memo.txt';
-    link.click();
-    URL.revokeObjectURL(link.href);
-   }else{
-    window.alert ("キャンセルされました");
-   }
-   memo.focus()
+  dl.forEach((e,i)=>{
+   e.addEventListener('click', ()=>{
+    if (confirm(`${dlList[e.id]}として保存してよろしいですか？`)){
+     const text = memoArea.value;
+     const blob = new Blob([text], { type: 'text/plain' });
+     const link = document.createElement('a');
+     link.href = URL.createObjectURL(blob);
+     link.download = dlList[e.id];
+     link.click();
+     URL.revokeObjectURL(link.href);
+    }else{
+     alert('キャンセルされました');
+    }
+    memo.focus()
+   });
   });
-  document.getElementById('html_download').addEventListener('click', ()=>{
-   if (confirm(".htmlとして保存してよろしいですか?")){
-    const text = memoArea.value;
-    const blob = new Blob([text], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'index.html';
-    link.click();
-    URL.revokeObjectURL(link.href);
-   }else{
-    window.alert ("キャンセルされました");
-   }
-   memo.focus()
-  });
-  document.getElementById('js_download').addEventListener('click', ()=>{
-   if (confirm (".jsとして保存してよろしいですか?")){
-    const text = memoArea.value;
-    const blob = new Blob([text], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'script.js';
-    link.click();
-    URL.revokeObjectURL(link.href);
-   }else{
-    window.alert ("キャンセルされました");
-   }
-   memo.focus()
-  });
-  document.getElementById('css_download').addEventListener('click', ()=>{
-   if (confirm(".cssとして保存してよろしいですか?")){
-    const text = memoArea.value;
-    const blob = new Blob([text], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'style.css';
-    link.click(); URL.revokeObjectURL(link.href);
-   }else{
-    window.alert ("キャンセルされました");
-   }
-   memo.focus()
-  });
-  let custom = document.getElementById("custom")
+  const custom = document.getElementById("custom")
   document.getElementById('custom_download').addEventListener('click', ()=>{
    if (confirm(custom.value + "として保存してよろしいですか?")){
     const text = memoArea.value;
     const blob = new Blob([text], { type: 'text/plain' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    if (custom.value.includes('.')){
+    if (custom.value.includes('.')){  
      link.download = 'custom' + custom.value;
     }else{
      link.download = 'custom.' + custom.value;
@@ -265,6 +235,48 @@
     const end = memoArea.selectionEnd;
     memoArea.value = memoArea.value.substring(0, start) + '  ' + memoArea.value.substring(end);
     memo.selectionStart = memo.selectionEnd = start + 2;
+   }
+  });
+
+  // drag and drop
+  const dragdrop = document.getElementById('dragdrop');
+
+  window.addEventListener('click', ()=>{
+   dragdrop.style.display = 'none';
+  });
+
+  window.addEventListener('dragenter', (e)=>{
+   e.preventDefault();
+   dragdrop.style.display = 'flex';
+  });
+
+  window.addEventListener('dragover', (e)=>{
+   e.preventDefault();
+   e.dataTransfer.dropEffect = 'copy';
+  });
+
+  dragdrop.addEventListener('dragleave', () => {
+   dragdrop.style.display = 'none';
+  });
+
+
+  window.addEventListener('drop', (e) => {
+   e.preventDefault();
+   dragdrop.style.display = 'none';
+   const droppedFiles = e.dataTransfer.files;
+   if (droppedFiles.length > 0) {
+    const file = droppedFiles[0];
+    const reader = new FileReader();
+    reader.onload = (event) => {
+     const dropContent = event.target.result;
+     if (confirm(`${file.name}のファイルを上書きしてよろしいですか？`)){
+      memoArea.value = dropContent;
+      alert('上書きされました')
+     }else{
+      alert('キャンセルされました');
+     }
+    }
+    reader.readAsText(file);
    }
   });
  </script>
