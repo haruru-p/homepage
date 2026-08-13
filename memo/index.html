@@ -271,6 +271,10 @@
      const dropContent = event.target.result;
      if (confirm(`${file.name}のファイルを上書きしてよろしいですか？`)){
       memoArea.value = dropContent;
+      h2tag.textContent = `文字数: ${memoArea.value.length}`
+      const bytes = new TextEncoder().encode(memoArea.value).length
+      const byte = (bytes / 1000).toFixed(2);
+      h2tag2.textContent = `サイズ: ${byte}KB`;
       alert('上書きされました')
      }else{
       alert('キャンセルされました');
