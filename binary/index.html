@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+ <meta charset = "UTF-8">
+ <title>バイナリエディタ</title>
+ <style>
+  body { margin: 0; box-sizing: border-box; padding: 0px; color: white; background-color: black; border-color: white; user-select: none; position: relative; }
+  #sep { width: 35px; height: 70px; background-color: black; border-color: white; color: white; font-size: 30px; }
+  #sep::placeholder { color: #888; }
+  #title { box-sizing: border-box;   width: 100%; height: 20px; margin: 0px; color: white; background-color: black; border-color: white; user-select: auto; font-size: 18px; }
+  #binary { width: 50%; height: 670px; margin: 0px; color: white; background-color: black; border-color: white; user-select: auto; }
+  #utf8 { width: 50%; height: 670px; margin: 0px; color: white; background-color: black; border-color: white; user-select: auto; }
+  #header { display: flex; gap: 50px; }
+  #body { display: flex; }
+  button { padding: 10px 20px; border-color: white; color: white; background-color: black; transition: 0.3s; }
+  button:hover { color: black; background-color: white; }
+  #upload { display: none; }
+ </style>
+</head>
+<body>
+ <div id="header">
+  <h2 id="h2tag">自作バイナリエディタ</h2>
+  <h2 id="h2tag2">サイズ: 0.00KB</h2>
+  <input type="text" id="sep" placeholder="no">
+ </div>
+ <input type="text" id="title" placeholder="タイトルを入力...">
+ <div id="body">
+  <textarea id="binary" placeholder="バイナリデータを入力..."></textarea>
+  <textarea id="utf8" placeholder="入力待機中..."></textarea>
+ </div>
+
+ <br>
+
+ <button class="download" id="jpg_download">.jpgとして保存</button>
+ <button class="download" id="jpeg_download">.jpegとして保存</button>
+ <button class="download" id="png_download">.pngとして保存</button>
+ <button class="download" id="exe_download">.exeとして保存</button>
+ <button id="upload2">アップロード</button>
+ <input type="file" id="upload">
+
+ <script>
+  const binary = document.getElementById('binary');
+  const utf8 = document.getElementById('utf8');
+  const download = document.querySelectorAll('.download');
+  const upload = document.getElementById('upload');
+  const upload2 = document.getElementById('upload2');
+  const h2tag2 = document.getElementById('h2tag2');
+  const sep = document.getElementById('sep');
+
+  const dlList = {
+   jpg_download: 'image.jpg',
+   jpeg_download: 'image.jpeg',
+   png_download: 'image.png',
+   exe_download: 'Windows.exe'
+  };
+
+  utf8.addEventListener('input', encode);
+  sep.addEventListener('input', ()=>{
+   if (sep.value.length <= 1)encode();
+  });
+
+  binary.addEventListener('input', decode)
+
+  function encode(){
+   const encoder = new TextEncoder();
+   const uint8 = encoder.encode(utf8.value);
+   const hexArray = [];
+   for (let i = 0; i < uint8.length; i++) {
+    hexArray.push(uint8[i].toString(16).toUpperCase().padStart(2, '0'));
+   }
+   binary.value = hexArray.join(sep.value);
+   h2tag2.textContent = `サイズ: ${(uint8.length / 1024).toFixed(2)}KB`;
+  };
+
+  function decode(){
+   const hexText = binary.value.replace(/[^0-9A-Fa-f]/g, '');
+   const byteArray = new Uint8Array(Math.floor(hexText.length / 2));
+   for (let i = 0; i < byteArray.length; i++) {
+    byteArray[i] = parseInt(hexText.substr(i * 2, 2), 16);
+   }
+   const decoder = new TextDecoder('utf-8');
+   utf8.value = decoder.decode(byteArray);
+   h2tag2.textContent = `サイズ: ${(Math.floor(hexText.length / 2) / 1024).toFixed(2)}KB`;
+  };
+
+
+  download.forEach((e,i)=>{
+   e.addEventListener('click', ()=>{
+    if (confirm(`${dlList[e.id]}として保存してよろしいですか？`)){
+     const hexText = binary.value.replace(/[^0-9A-Fa-f]/g, '');
+     const byteArray = new Uint8Array(hexText.length / 2);
+     for (let i = 0; i < byteArray.length; i++) {
+      byteArray[i] = parseInt(hexText.substr(i * 2, 2), 16);
+     }
+     const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+     const link = document.createElement('a');
+     link.href = URL.createObjectURL(blob);
+     link.download = dlList[e.id];
+     link.click();
+     URL.revokeObjectURL(link.href);
+    }else{
+     alert('キャンセルされました');
+    }
+    binary.focus()
+   });
+  });
+
+  upload2.addEventListener('click', ()=>{upload.click();});
+  upload.addEventListener('click', (e)=>{e.target.value='';});
+
+  upload.addEventListener('change', async (e) => {
+   const file = e.target.files[0];
+   if (!file) return;
+   const arrayBuffer = await file.arrayBuffer();
+   const uint8 = new Uint8Array(arrayBuffer);
+   const hexArray = [];
+   for (let i = 0; i < uint8.length; i++) {
+    hexArray.push(uint8[i].toString(16).toUpperCase().padStart(2, '0'));
+   }
+   binary.value = hexArray.join(sep.value); 
+   decode();
+  });
+ </script>
+</body>
+</html>
